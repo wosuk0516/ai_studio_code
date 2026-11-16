@@ -1,0 +1,1352 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MBTI 성향 테스트</title>
+    <meta
+      name="description"
+      content="우사기와 함께 음식 취향과 여행 스타일로 알아보는 재미있는 12문항 MBTI 성향 테스트"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Outfit:wght@600;700;800&display=swap"
+      rel="stylesheet"
+      crossorigin="anonymous"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js"></script>
+    <style>
+      html,
+      body {
+        background-color: #fffdf5;
+        color: #2d221e;
+        font-family: "Gowun Dodum", "Outfit", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .font-display {
+        font-family: "Jua", "Outfit", sans-serif;
+      }
+
+      .font-latin {
+        font-family: "Outfit", "Jua", sans-serif;
+      }
+
+      .usagi-paper-bg {
+        background-color: #fffdf5;
+        background-image: radial-gradient(#efe2bd 1.25px, transparent 1.25px);
+        background-size: 24px 24px;
+      }
+
+      @keyframes usagiFloat {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-5px);
+        }
+      }
+
+      @keyframes usagiCheer {
+        0%,
+        100% {
+          transform: translateY(0) rotate(-2deg);
+        }
+        50% {
+          transform: translateY(-8px) rotate(2deg);
+        }
+      }
+
+      @keyframes choiceBounce {
+        0% {
+          transform: scale(1) translateY(0);
+        }
+        35% {
+          transform: scale(1.04) translateY(-5px);
+        }
+        70% {
+          transform: scale(0.97) translateY(0);
+        }
+        100% {
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .animate-usagi-float {
+        animation: usagiFloat 2.8s ease-in-out infinite;
+      }
+
+      .animate-usagi-cheer {
+        animation: usagiCheer 2.2s ease-in-out infinite;
+      }
+
+      .animate-choice-bounce {
+        animation: choiceBounce 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .animate-fade-up {
+        animation: fadeUp 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="usagi-paper-bg relative flex min-h-screen flex-col overflow-x-hidden text-[#2D221E]">
+    <!-- 배경 우사기 패턴 레이어 -->
+    <div
+      id="bg-usagi-layer"
+      aria-hidden="true"
+      class="pointer-events-none fixed inset-0 z-0 overflow-hidden select-none"
+    ></div>
+
+    <!-- 상단 헤더 -->
+    <header class="sticky top-0 z-30 border-b-2 border-[#EFE4CE] bg-[#FFFDF5]/90 backdrop-blur-md">
+      <div class="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:h-16 sm:px-6">
+        <button
+          id="header-title-btn"
+          type="button"
+          class="cursor-pointer rounded-lg px-1 font-display text-xl tracking-tight text-[#2D221E] whitespace-nowrap shrink-0 sm:text-2xl"
+        >
+          MBTI 성향 테스트
+        </button>
+        <button
+          id="header-reset-btn"
+          type="button"
+          class="hidden min-h-[44px] cursor-pointer rounded-xl px-3.5 py-2 text-[15px] font-bold text-[#5C4940] transition-colors hover:bg-[#FFF4B8] hover:text-[#2D221E] whitespace-nowrap shrink-0 sm:text-base"
+        >
+          처음으로
+        </button>
+      </div>
+    </header>
+
+    <!-- 메인 화면 컨테이너 -->
+    <main id="app" class="relative z-10 flex flex-1 items-center justify-center px-3.5 py-5 sm:px-6 sm:py-10"></main>
+
+    <footer class="relative z-10 py-4 text-center text-[13px] font-medium text-[#8A6D5B] sm:text-sm">
+      가볍고 즐겁게 알아보는 일상 MBTI 성향 테스트
+    </footer>
+
+    <script>
+      const USAGI_IMAGE_URL = './usagi-cutout.png';
+
+      const USAGI_FALLBACK_SVG = `
+        <svg viewBox="0 0 120 155" class="h-full w-full" aria-label="우사기 일러스트">
+          <ellipse cx="47" cy="30" rx="9" ry="26" fill="#FCF6D6" stroke="#2D221E" stroke-width="5" />
+          <ellipse cx="47" cy="32" rx="4" ry="16" fill="#F6B8C8" />
+          <ellipse cx="73" cy="30" rx="9" ry="26" fill="#FCF6D6" stroke="#2D221E" stroke-width="5" />
+          <ellipse cx="73" cy="32" rx="4" ry="16" fill="#F6B8C8" />
+          <ellipse cx="60" cy="92" rx="42" ry="44" fill="#FCF6D6" stroke="#2D221E" stroke-width="5" />
+          <path d="M32 70 Q39 60 47 63" fill="none" stroke="#2D221E" stroke-width="4" stroke-linecap="round" />
+          <path d="M73 63 Q81 60 88 70" fill="none" stroke="#2D221E" stroke-width="4" stroke-linecap="round" />
+          <circle cx="47" cy="80" r="5" fill="#2D221E" />
+          <circle cx="45.5" cy="78.5" r="1.7" fill="#FFFFFF" />
+          <circle cx="73" cy="80" r="5" fill="#2D221E" />
+          <circle cx="71.5" cy="78.5" r="1.7" fill="#FFFFFF" />
+          <ellipse cx="33" cy="92" rx="9" ry="5.5" fill="#F6B8C8" />
+          <ellipse cx="87" cy="92" rx="9" ry="5.5" fill="#F6B8C8" />
+          <path d="M53 91 Q56.5 96 60 91 Q63.5 96 67 91" fill="none" stroke="#2D221E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M22 108 Q14 114 21 120" fill="#FCF6D6" stroke="#2D221E" stroke-width="4.5" stroke-linecap="round" />
+          <path d="M98 108 Q106 114 99 120" fill="#FCF6D6" stroke="#2D221E" stroke-width="4.5" stroke-linecap="round" />
+          <ellipse cx="52" cy="138" rx="6" ry="5" fill="#FCF6D6" stroke="#2D221E" stroke-width="4" />
+          <ellipse cx="68" cy="138" rx="6" ry="5" fill="#FCF6D6" stroke="#2D221E" stroke-width="4" />
+        </svg>
+      `;
+
+      const QUIZ_QUESTIONS = [
+        {
+          id: 1,
+          dimension: 'EI',
+          situation: '음식 취향 · 핫플 식당',
+          question: '새로 오픈한 인기 맛집에 들어갔을 때 나의 모습은?',
+          usagiTip: '맛있는 냄새가 솔솔 난다 야하!',
+          options: [
+            {
+              label: 'A',
+              text: '직원분께 오늘 제일 잘 나가는 메뉴를 직접 물어보고, 옆 테이블 메뉴도 슬쩍 스캔한다',
+              trait: 'E',
+            },
+            {
+              label: 'B',
+              text: '조용한 구석 자리에 앉아 메뉴판을 천천히 정독한 뒤, 키오스크로 주문하는 게 편하다',
+              trait: 'I',
+            },
+          ],
+        },
+        {
+          id: 2,
+          dimension: 'SN',
+          situation: '여행 스타일 · 기차 안',
+          question: '여행지로 향하는 기차나 비행기 안에서 창밖을 바라볼 때 내 머릿속은?',
+          usagiTip: '두근두근 출발하는 순간!',
+          options: [
+            {
+              label: 'A',
+              text: '도착 시간, 역에서 숙소까지 출구 번호, 오늘 이동 동선부터 꼼꼼하게 확인한다',
+              trait: 'S',
+            },
+            {
+              label: 'B',
+              text: '지나가는 풍경 보며 멍 때리다가 "저 동네에 살면 매일 어떤 기분일까?" 상상을 펼친다',
+              trait: 'N',
+            },
+          ],
+        },
+        {
+          id: 3,
+          dimension: 'TF',
+          situation: '음식 취향 · 매운맛 챌린지',
+          question: '친구가 "오늘 먹은 마라탕 너무 매워서 속 쓰려 ㅠㅠ"라고 카톡을 보냈다면?',
+          usagiTip: '우사기라면 어떤 답장을 보낼까?',
+          options: [
+            {
+              label: 'A',
+              text: '"헐 몇 단계로 시켰는데? 집에 우유나 양배추즙 있으면 그거부터 얼른 마셔봐!"',
+              trait: 'T',
+            },
+            {
+              label: 'B',
+              text: '"아이고 매운 거 먹느라 고생했네 ㅠㅠ 지금 많이 아파? 얼른 쉬어 토닥토닥"',
+              trait: 'F',
+            },
+          ],
+        },
+        {
+          id: 4,
+          dimension: 'JP',
+          situation: '여행 스타일 · 출발 전날 밤',
+          question: '드디어 내일 떠나는 설레는 여행! 전날 밤 나의 캐리어와 일정표는?',
+          usagiTip: '짐 싸는 것부터 여행의 시작!',
+          options: [
+            {
+              label: 'A',
+              text: '체크리스트 보며 짐 싸기 끝! 지도 앱에 가고 싶은 맛집 핀까지 전부 저장해 뒀다',
+              trait: 'J',
+            },
+            {
+              label: 'B',
+              text: '일단 입을 옷만 대충 쑤셔 넣고, 내일 어디 갈지는 아침에 눈 뜨자마자 기분 따라 정한다',
+              trait: 'P',
+            },
+          ],
+        },
+        {
+          id: 5,
+          dimension: 'EI',
+          situation: '여행 스타일 · 새로운 만남',
+          question: '여행지 게스트하우스나 투어에서 낯선 여행자들과 함께 있게 되었다면?',
+          usagiTip: '여행지에서의 우연한 만남!',
+          options: [
+            {
+              label: 'A',
+              text: '"어디서 오셨어요?" 먼저 말을 걸어 맛집 정보도 나누고 금세 수다 친구가 된다',
+              trait: 'E',
+            },
+            {
+              label: 'B',
+              text: '눈이 마주치면 가볍게 미소만 짓고, 내 일행이나 혼자만의 고요한 여행에 집중한다',
+              trait: 'I',
+            },
+          ],
+        },
+        {
+          id: 6,
+          dimension: 'SN',
+          situation: '음식 취향 · 디저트 카페',
+          question: '처음 가보는 예쁜 디저트 카페에서 메뉴를 고를 때 나의 선택 기준은?',
+          usagiTip: '달달한 케이크랑 커피 타임!',
+          options: [
+            {
+              label: 'A',
+              text: '실패 확률 0%! 별점 리뷰가 가장 많고 사진이 검증된 시그니처 베스트 메뉴를 고른다',
+              trait: 'S',
+            },
+            {
+              label: 'B',
+              text: '"구름 몽글 소다"처럼 이름이 독특하거나 오늘만 파는 신비로운 시즌 한정 메뉴에 끌린다',
+              trait: 'N',
+            },
+          ],
+        },
+        {
+          id: 7,
+          dimension: 'TF',
+          situation: '여행 스타일 · 돌발 변수',
+          question: '일부러 찾아간 여행지 로컬 맛집이 하필 "오늘 재료 소진"으로 문을 닫았다면?',
+          usagiTip: '앗! 닫혀버린 가게 문 앞에서!',
+          options: [
+            {
+              label: 'A',
+              text: '"아쉽네!" 하고 1분 만에 지도 앱을 켜서 근처 평점 높은 대체 맛집을 빠르게 찾아 이동한다',
+              trait: 'T',
+            },
+            {
+              label: 'B',
+              text: '"여기 오려고 아침부터 기대했는데 ㅠㅠ" 속상한 마음에 한참 문 앞을 서성이다가 움직인다',
+              trait: 'F',
+            },
+          ],
+        },
+        {
+          id: 8,
+          dimension: 'JP',
+          situation: '음식 취향 · 저녁 메뉴 고민',
+          question: '배고픈 저녁, 배달 앱을 켜고 오늘 저녁 메뉴를 고를 때 나는 보통?',
+          usagiTip: '꼬르륵! 뭐 시켜 먹지?',
+          options: [
+            {
+              label: 'A',
+              text: '이미 낮부터 먹을 메뉴를 정해놨기 때문에 검색창에 메뉴 이름 바로 치고 3분 만에 주문한다',
+              trait: 'J',
+            },
+            {
+              label: 'B',
+              text: '배달 앱 여기저기 구경하다가 갑자기 뜬 사진이나 할인 쿠폰을 보고 즉흥적으로 바꾼다',
+              trait: 'P',
+            },
+          ],
+        },
+        {
+          id: 9,
+          dimension: 'EI',
+          situation: '음식 취향 · 최고의 힐링 한 끼',
+          question: '한 주 동안 수고한 나에게 주는 가장 완벽한 한 끼 보상 타임은?',
+          usagiTip: '맛있게 먹으면 0칼로리!',
+          options: [
+            {
+              label: 'A',
+              text: '친한 친구들 불러 모아 시끌벅적하게 고기 구워 먹으며 쌓인 수다를 와르르 쏟아내기',
+              trait: 'E',
+            },
+            {
+              label: 'B',
+              text: '집에서 최애 배달 음식 시켜놓고 좋아하는 유튜브나 드라마 틀어둔 채 혼자 편하게 먹기',
+              trait: 'I',
+            },
+          ],
+        },
+        {
+          id: 10,
+          dimension: 'SN',
+          situation: '여행 스타일 · 노을 맛집',
+          question: '여행지에서 그림처럼 예쁜 바다 노을을 마주했을 때 머릿속에 스치는 생각은?',
+          usagiTip: '반짝반짝 예쁜 풍경이다!',
+          options: [
+            {
+              label: 'A',
+              text: '"와 색감 미쳤다! 역광 안 지게 각도 맞춰서 인생샷 몇 장 건지고 바람 시원하다!"',
+              trait: 'S',
+            },
+            {
+              label: 'B',
+              text: '"시간이 잠시 멈춘 것 같아... 이 순간의 공기랑 기분은 평생 잊히지 않을 것 같다"',
+              trait: 'N',
+            },
+          ],
+        },
+        {
+          id: 11,
+          dimension: 'TF',
+          situation: '음식 취향 · 친구의 홈쿡',
+          question: '친구가 나를 위해 직접 만들어준 파스타가 솔직히 내 입맛엔 살짝 짜다면?',
+          usagiTip: '칭찬과 솔직함 사이의 선택!',
+          options: [
+            {
+              label: 'A',
+              text: '"고마워! 근데 간이 조금 센 것 같아서 물 조금 넣거나 피클이랑 같이 먹으면 딱 좋겠다"',
+              trait: 'T',
+            },
+            {
+              label: 'B',
+              text: '"내 생각하면서 직접 만들어준 정성이 너무 감동이야 ㅠㅠ 진짜 맛있게 잘 먹었어!"',
+              trait: 'F',
+            },
+          ],
+        },
+        {
+          id: 12,
+          dimension: 'JP',
+          situation: '여행 스타일 · 돌아가는 날',
+          question: '여행 마지막 날, 집으로 돌아가는 기차역이나 공항으로 가기 전 나의 모습은?',
+          usagiTip: '아쉬운 여행의 마지막 페이지!',
+          options: [
+            {
+              label: 'A',
+              text: '사야 할 기념품 리스트를 미리 다 챙겨두고 출발 1시간 전엔 여유롭게 도착해 기다린다',
+              trait: 'J',
+            },
+            {
+              label: 'B',
+              text: '1분 1초가 아까워서 골목 구석구석 마지막까지 구경하다가 시간 맞춰 아슬아슬하게 탑승한다',
+              trait: 'P',
+            },
+          ],
+        },
+      ];
+
+      const MBTI_RESULTS = {
+        ENFP: {
+          type: 'ENFP',
+          nickname: '에너지 넘치는 모험가',
+          description: [
+            '어딜 가든 밝은 기운을 뿜어내며 주변까지 웃게 만드는 분위기 메이커예요.',
+            '새롭고 재미있는 맛집이나 여행지가 보이면 망설임 없이 눈을 반짝이며 뛰어드는 호기심 대장이죠.',
+            '사람들의 감정을 빠르게 캐치해서 진심으로 공감해 주고, 따뜻한 응원을 아끼지 않아요.',
+            '가끔 계획이 틀어져도 "오히려 재밌잖아!" 하고 긍정적으로 넘기는 유연한 매력의 소유자랍니다.',
+          ],
+          jobs: [
+            { title: '콘텐츠 크리에이터', reason: '톡톡 튀는 아이디어와 텐션으로 사람들을 사로잡아요' },
+            { title: '이벤트·페스티벌 기획자', reason: '즐거운 판을 짜고 사람들과 호흡할 때 빛나요' },
+            { title: '브랜드 마케터', reason: '트렌드를 빠르게 읽고 매력적인 스토리를 만들어요' },
+          ],
+          compatibleTypes: [
+            { type: 'INFJ', nickname: '다정한 통찰력의 숲지기', reason: '엉뚱한 상상도 깊게 이해해 주는 마음의 짝꿍이에요' },
+            { type: 'INTJ', nickname: '치밀한 큰 그림 설계자', reason: '자유로운 아이디어를 현실적인 계획으로 척척 묶어줘요' },
+            { type: 'ENFJ', nickname: '다정한 캡틴 치어리더', reason: '함께 떠나면 텐션이 두 배로 터지는 환상의 여행 메이트!' },
+          ],
+          usagiComment: '야하! 나랑 텐션이 찰떡이다!',
+          badgeBg: '#FFE678',
+        },
+        ENFJ: {
+          type: 'ENFJ',
+          nickname: '다정한 캡틴 치어리더',
+          description: [
+            '주변 사람들을 세심하게 챙기고 모두가 함께 행복하길 바라는 따뜻한 리더예요.',
+            '친구의 작은 기분 변화도 금방 알아채서 먼저 손을 내밀어 주는 다정함이 있어요.',
+            '여행 일정이나 맛집 모임도 책임감 있게 척척 이끌어 나가서 늘 믿음직한 존재랍니다.',
+            '가끔 남을 배려하느라 내 에너지를 다 써버릴 때도 있으니, 혼자 쉬는 시간도 꼭 챙겨주세요!',
+          ],
+          jobs: [
+            { title: '커뮤니티 매니저', reason: '사람들을 연결하고 따뜻한 분위기를 만드는 데 탁월해요' },
+            { title: '교사·멘토·강사', reason: '상대의 잠재력을 끌어내고 진심으로 응원해 줘요' },
+            { title: '홍보·PR 스페셜리스트', reason: '신뢰감 있는 소통으로 사람들의 마음을 움직여요' },
+          ],
+          compatibleTypes: [
+            { type: 'INFP', nickname: '마음이 말랑한 몽상가', reason: '서로의 따뜻한 진심이 가장 깊이 통하는 힐링 조합이에요' },
+            { type: 'ISFP', nickname: '감성 충만 자유로운 예술가', reason: '부드러운 감성과 배려가 어우러져 편안한 시간을 만들어요' },
+            { type: 'ENFP', nickname: '에너지 넘치는 모험가', reason: '밝은 에너지가 만나 어딜 가든 웃음이 끊이지 않아요' },
+          ],
+          usagiComment: '우사기도 너랑 같이 있으면 든든해!',
+          badgeBg: '#FFD6E0',
+        },
+        ENTP: {
+          type: 'ENTP',
+          nickname: '유쾌한 아이디어 뱅크',
+          description: [
+            '남들이 당연하게 여기는 것도 "왜 그럴까? 이렇게 하면 더 재밌지 않을까?" 뒤집어 보는 천재형이에요.',
+            '재치 있는 입담과 빠른 두뇌 회전 덕분에 같이 밥 먹거나 수다 떨면 시간 가는 줄 모르게 만들죠.',
+            '새로운 음식이나 낯선 여행 코스를 만나면 지루할 틈 없이 몰입하는 에너지가 넘쳐요.',
+            '틀에 박힌 규칙보다는 자유롭게 상상하고 실험할 수 있는 환경에서 가장 반짝반짝 빛난답니다.',
+          ],
+          jobs: [
+            { title: '스타트업 창업가·기획자', reason: '남다른 발상으로 새로운 기회를 빠르게 포착해요' },
+            { title: '광고 카피라이터', reason: '재치와 반전이 담긴 한 줄로 시선을 단번에 끌어요' },
+            { title: '프로덕트 매니저(PM)', reason: '다양한 관점을 조율해 더 나은 해답을 찾아내요' },
+          ],
+          compatibleTypes: [
+            { type: 'INFJ', nickname: '다정한 통찰력의 숲지기', reason: '끝없는 생각의 흐름을 차분하게 받아주며 시너지를 내요' },
+            { type: 'INTJ', nickname: '치밀한 큰 그림 설계자', reason: '날카로운 티키타카가 통하는 최고의 브레인 콤비예요' },
+            { type: 'ENFP', nickname: '에너지 넘치는 모험가', reason: '즉흥적인 모험과 기발한 수다가 끊이지 않는 즐거운 사이!' },
+          ],
+          usagiComment: '오호~ 머리가 팽글팽글 잘 돌아가는걸!',
+          badgeBg: '#FFE678',
+        },
+        ENTJ: {
+          type: 'ENTJ',
+          nickname: '추진력 만렙 전략가',
+          description: [
+            '목표가 정해지면 주저하지 않고 가장 효율적인 길을 그려서 끝까지 해내는 실행력의 화신이에요.',
+            '복잡한 여행 동선이나 모임 상황에서도 핵심을 콕 집어내어 믿고 따를 수 있는 방향을 제시하죠.',
+            '겉으로는 카리스마 있어 보이지만, 내 사람들에게는 맛있는 걸 척척 사주는 든든한 면모도 있어요.',
+            '스스로 세운 기준을 하나씩 달성해 나갈 때 가장 짜릿한 성취감을 느끼는 타입이랍니다.',
+          ],
+          jobs: [
+            { title: '프로젝트 디렉터', reason: '큰 그림을 그리고 팀을 목표까지 깔끔하게 이끌어요' },
+            { title: '경영·전략 컨설턴트', reason: '문제를 날카롭게 분석해 명쾌한 해법을 내놓아요' },
+            { title: '테크 프로덕트 리드', reason: '빠른 결단력과 추진력으로 결과를 만들어내요' },
+          ],
+          compatibleTypes: [
+            { type: 'INFP', nickname: '마음이 말랑한 몽상가', reason: '강한 추진력에 따뜻한 감성을 더해 균형을 맞춰줘요' },
+            { type: 'INTP', nickname: '호기심 가득한 방구석 연구원', reason: '논리적인 대화가 잘 통하고 서로의 강점을 완벽히 보완해요' },
+            { type: 'ISTP', nickname: '만능 재주꾼 쿨냥이', reason: '군더더기 없이 쿨하고 깔끔한 호흡으로 일도 여행도 척척!' },
+          ],
+          usagiComment: '우라! 믿고 따라가도 되겠는데?',
+          badgeBg: '#FDE68A',
+        },
+        ESFP: {
+          type: 'ESFP',
+          nickname: '인생이 축제인 슈퍼스타',
+          description: [
+            '지금 이 순간을 누구보다 맛있고 신나게 즐길 줄 아는 타고난 해피 바이러스예요.',
+            '어색한 분위기도 특유의 솔직함과 유쾌한 리액션으로 순식간에 화기애애하게 바꿔놓죠.',
+            '예쁜 카페, 맛있는 음식, 신나는 여행처럼 오감을 즐겁게 하는 것들에 진심이에요.',
+            '복잡한 걱정보다는 "일단 해보자!" 하며 긍정적인 에너지를 뿜뿜 전파하는 매력쟁이랍니다.',
+          ],
+          jobs: [
+            { title: '쇼호스트·MC', reason: '생동감 넘치는 표현력으로 분위기를 단숨에 살려요' },
+            { title: '파티·공간 스타일리스트', reason: '감각적인 취향으로 즐거운 경험을 디자인해요' },
+            { title: '여행·푸드 크리에이터', reason: '일상의 즐거움을 누구보다 맛있게 담아내요' },
+          ],
+          compatibleTypes: [
+            { type: 'ISFJ', nickname: '따뜻한 수호천사 집사', reason: '신나게 놀다가도 세심하게 챙겨주는 든든한 단짝이에요' },
+            { type: 'ISTJ', nickname: '한결같은 프로 성실러', reason: '즉흥적인 즐거움과 탄탄한 계획이 만나 완벽한 여행이 돼요' },
+            { type: 'ESFJ', nickname: '센스 만점 다정 요정', reason: '맛집 탐방과 수다로 하루 종일 지루할 틈이 없어요' },
+          ],
+          usagiComment: '야하! 오늘 맛있는 거 먹으러 가자!',
+          badgeBg: '#FFD6E0',
+        },
+        ESFJ: {
+          type: 'ESFJ',
+          nickname: '센스 만점 다정 요정',
+          description: [
+            '만나는 사람마다 편안함을 느끼게 해주는 친화력과 배려심을 타고났어요.',
+            '친구들의 음식 취향이나 사소한 기념일까지 기억해 뒀다가 센스 있게 챙겨주는 감동 메이커죠.',
+            '약속 시간이나 모임의 조화를 중요하게 생각해서, 함께 있으면 늘 기분 좋고 안정감이 느껴져요.',
+            '주변 사람들의 따뜻한 말 한마디와 고마움의 표현에 금세 큰 힘을 얻는 사랑스러운 타입이에요.',
+          ],
+          jobs: [
+            { title: '웨딩·행사 플래너', reason: '세심한 배려와 꼼꼼함으로 특별한 날을 완성해요' },
+            { title: '고객 경험(CX) 매니저', reason: '상대의 마음을 읽고 기분 좋은 해결책을 찾아요' },
+            { title: '교육·상담 코디네이터', reason: '다정한 소통으로 신뢰감을 쌓는 데 강점이 있어요' },
+          ],
+          compatibleTypes: [
+            { type: 'ISFP', nickname: '감성 충만 자유로운 예술가', reason: '다정함과 소소한 감성이 만나 가장 평화로운 시간을 보내요' },
+            { type: 'ISTP', nickname: '만능 재주꾼 쿨냥이', reason: '세심한 챙김과 쿨한 매력이 서로에게 기분 좋은 자극이 돼요' },
+            { type: 'ESFP', nickname: '인생이 축제인 슈퍼스타', reason: '어딜 가나 화기애애하고 즐거운 에너지를 공유해요' },
+          ],
+          usagiComment: '세심하게 챙겨주는 모습 멋지다!',
+          badgeBg: '#FFE4EC',
+        },
+        ESTP: {
+          type: 'ESTP',
+          nickname: '쿨하고 화끈한 해결사',
+          description: [
+            '고민만 길게 끌기보다 직접 부딪혀 보고 맛보고 경험하며 답을 찾아내는 액션파예요.',
+            '여행 중 갑작스러운 변수가 생겨도 당황하기보다 "오케이, 이쪽 가보자!" 하고 쿨하게 대처하죠.',
+            '솔직하고 뒤끝 없는 성격 덕분에 주변에 편하게 어울리는 친구들이 많아요.',
+            '새로운 액티비티와 로컬 맛집을 찾아다니며 오늘 하루를 꽉 채워 살아가는 에너자이저랍니다.',
+          ],
+          jobs: [
+            { title: '스포츠·액티비티 트레이너', reason: '넘치는 현장 에너지와 순발력이 빛을 발해요' },
+            { title: '세일즈·비즈니스 개발자', reason: '망설임 없는 추진력과 협상 센스가 뛰어나요' },
+            { title: '영상·현장 프로듀서', reason: '시시각각 변하는 현장을 유연하게 지휘해요' },
+          ],
+          compatibleTypes: [
+            { type: 'ISFJ', nickname: '따뜻한 수호천사 집사', reason: '화끈한 추진력 옆을 차분하고 다정하게 챙겨주는 조합이에요' },
+            { type: 'ISTJ', nickname: '한결같은 프로 성실러', reason: '현실 감각이 잘 맞아서 일도 여행도 매끄럽게 풀려요' },
+            { type: 'ENTP', nickname: '유쾌한 아이디어 뱅크', reason: '재미있는 도전을 망설임 없이 함께 즐길 수 있어요' },
+          ],
+          usagiComment: '이야~ 시원시원하고 멋있다 야하!',
+          badgeBg: '#FFE678',
+        },
+        ESTJ: {
+          type: 'ESTJ',
+          nickname: '든든한 현실 캡틴',
+          description: [
+            '맡은 일은 시작부터 마무리까지 빈틈없이 깔끔하게 처리하는 믿음직한 실력자예요.',
+            '말만 앞세우기보다는 실제 행동과 검증된 정보로 보여주는 정직하고 시원한 매력이 있죠.',
+            '약속과 규칙을 잘 지키고, 모임이나 여행이 엉키지 않게 중심을 딱 잡아주는 역할을 톡톡히 해요.',
+            '겉은 조금 무뚝뚝해 보여도 내 사람들에게는 실속 있게 잘 챙겨주는 츤데레 스타일이랍니다.',
+          ],
+          jobs: [
+            { title: '운영·프로젝트 매니저', reason: '일정과 자원을 체계적으로 관리하는 능력이 탁월해요' },
+            { title: '금융·자산 관리 전문가', reason: '객관적인 수치와 현실적인 판단력이 돋보여요' },
+            { title: '공무원·행정 전문가', reason: '정확한 기준과 책임감으로 신뢰를 얻어요' },
+          ],
+          compatibleTypes: [
+            { type: 'ISFP', nickname: '감성 충만 자유로운 예술가', reason: '계획적인 든든함과 여유로운 감성이 기분 좋게 어울려요' },
+            { type: 'ISTP', nickname: '만능 재주꾼 쿨냥이', reason: '불필요한 감정 소모 없이 깔끔하고 실속 있게 통하는 사이!' },
+            { type: 'ESFJ', nickname: '센스 만점 다정 요정', reason: '성실함과 다정함이 만나 주변까지 편안해지는 조합이에요' },
+          ],
+          usagiComment: '빈틈없이 척척! 최고야!',
+          badgeBg: '#FDE68A',
+        },
+        INFP: {
+          type: 'INFP',
+          nickname: '마음이 말랑한 몽상가',
+          description: [
+            '조용한 순간에도 머릿속에는 따뜻하고 다채로운 이야기가 가득 피어나는 감성 부자예요.',
+            '타인의 아픔이나 작은 감동에도 깊이 공감하며 진심 어린 위로를 건넬 줄 알죠.',
+            '취향에 맞는 아늑한 카페나 골목 여행지 앞에서는 놀라울 만큼 깊은 애정을 쏟아요.',
+            '혼자만의 포근한 공간에서 좋아하는 음식과 음악을 즐길 때 가장 큰 행복을 느낀답니다.',
+          ],
+          jobs: [
+            { title: '웹툰·일러스트 작가', reason: '풍부한 상상력과 섬세한 감성을 그림에 담아요' },
+            { title: '스토리·에세이 작가', reason: '마음을 울리는 진솔한 문장으로 공감을 이끌어요' },
+            { title: '심리·예술 치료사', reason: '타인의 감정을 따뜻하게 보듬는 힘이 있어요' },
+          ],
+          compatibleTypes: [
+            { type: 'ENFJ', nickname: '다정한 캡틴 치어리더', reason: '속마음을 따뜻하게 이끌어주고 다정하게 감싸줘요' },
+            { type: 'ENTJ', nickname: '추진력 만렙 전략가', reason: '망설이는 순간에도 든든하게 방향을 잡아주는 멋진 짝꿍!' },
+            { type: 'INFJ', nickname: '다정한 통찰력의 숲지기', reason: '말하지 않아도 서로의 감성과 진심이 고스란히 전해져요' },
+          ],
+          usagiComment: '포근포근한 마음이 느껴져~',
+          badgeBg: '#FFD6E0',
+        },
+        INFJ: {
+          type: 'INFJ',
+          nickname: '다정한 통찰력의 숲지기',
+          description: [
+            '겉으로 드러난 말보다 그 사람의 진짜 마음과 상황의 본질을 조용히 읽어내는 힘이 있어요.',
+            '평소엔 차분하고 다정하지만, 내면에는 단단한 신념과 깊이 있는 생각들을 품고 있죠.',
+            '깊은 대화를 나눌 수 있는 소수의 친구들과 조용한 맛집이나 산책길을 걸을 때 가장 편안해요.',
+            '누군가에게 조용하지만 확실한 도움이 되었을 때 마음속 깊이 잔잔한 보람을 느끼는 타입이에요.',
+          ],
+          jobs: [
+            { title: 'UX 리서처·서비스 기획자', reason: '사람의 숨은 니즈를 섬세하게 읽어내어 설계해요' },
+            { title: '상담사·라이프 코치', reason: '깊은 경청과 통찰로 상대에게 길을 비춰줘요' },
+            { title: '출판 에디터·큐레이터', reason: '의미 있는 이야기를 발굴하고 다듬는 감각이 뛰어나요' },
+          ],
+          compatibleTypes: [
+            { type: 'ENFP', nickname: '에너지 넘치는 모험가', reason: '반짝이는 밝은 에너지가 내면의 깊은 감성을 환하게 밝혀줘요' },
+            { type: 'ENTP', nickname: '유쾌한 아이디어 뱅크', reason: '흥미로운 대화 주제가 마르지 않는 최고의 지적 파트너!' },
+            { type: 'INFP', nickname: '마음이 말랑한 몽상가', reason: '조용하고 다정한 호흡으로 오래 함께할수록 깊어지는 사이' },
+          ],
+          usagiComment: '내 마음도 척척 알아주는 것 같아!',
+          badgeBg: '#FCE7F3',
+        },
+        INTP: {
+          type: 'INTP',
+          nickname: '호기심 가득한 방구석 연구원',
+          description: [
+            '"이건 왜 이렇게 작동하지?" 한 번 궁금증이 생기면 밤새 파고드는 지적 탐험가예요.',
+            '남들의 유행에 휩쓸리기보다 나만의 취향과 기준으로 메뉴나 여행지를 흥미롭게 고르죠.',
+            '평소엔 느긋하고 조용해 보여도, 관심 있는 주제가 나오면 눈빛이 바뀌며 이야기를 쏟아내요.',
+            '불필요한 감정 소모보다 효율적이고 자유로운 혼자만의 탐구 시간을 무엇보다 소중히 여겨요.',
+          ],
+          jobs: [
+            { title: '소프트웨어·AI 개발자', reason: '복잡한 구조를 논리적으로 풀어나가는 재미에 빠져요' },
+            { title: '데이터 분석가', reason: '숨겨진 패턴과 원리를 찾아내는 데 탁월해요' },
+            { title: '게임 시스템 디자이너', reason: '독창적인 규칙과 세계관을 치밀하게 설계해요' },
+          ],
+          compatibleTypes: [
+            { type: 'ENTJ', nickname: '추진력 만렙 전략가', reason: '명쾌한 아이디어와 실행력이 만나 최고의 결과를 만들어요' },
+            { type: 'ESTJ', nickname: '든든한 현실 캡틴', reason: '추상적인 아이디어를 현실에서 깔끔하게 정리해 줘요' },
+            { type: 'INTJ', nickname: '치밀한 큰 그림 설계자', reason: '쓸데없는 말 없이도 핵심이 통하는 지적인 동반자예요' },
+          ],
+          usagiComment: '오~ 엄청 똑똑한 느낌인데?!',
+          badgeBg: '#FEF3C7',
+        },
+        INTJ: {
+          type: 'INTJ',
+          nickname: '치밀한 큰 그림 설계자',
+          description: [
+            '눈앞의 작은 변수에 흔들리지 않고 몇 수 앞을 내다보며 조용히 계획을 세우는 전략가예요.',
+            '스스로 납득할 수 있는 완성도를 추구해서, 여행 동선이나 맛집 리스트도 실패 없게 짜놓죠.',
+            '쓸데없는 수다보다는 핵심이 통하는 명쾌한 대화와 독립적인 휴식 시간을 선호해요.',
+            '겉으로는 차분하고 냉철해 보여도, 한 번 마음을 연 사람에게는 의외로 허당미와 따뜻함을 보여줘요.',
+          ],
+          jobs: [
+            { title: '시스템 아키텍트', reason: '전체 구조를 깔끔하고 견고하게 설계하는 데 강해요' },
+            { title: '전략 기획자·애널리스트', reason: '장기적인 흐름을 읽고 치밀한 로드맵을 그려요' },
+            { title: '연구원·R&D 전문가', reason: '깊은 몰입으로 전문 분야의 해답을 파고들어요' },
+          ],
+          compatibleTypes: [
+            { type: 'ENFP', nickname: '에너지 넘치는 모험가', reason: '신중한 일상에 유쾌한 웃음과 색다른 영감을 불어넣어 줘요' },
+            { type: 'ENTP', nickname: '유쾌한 아이디어 뱅크', reason: '생각의 깊이와 속도가 딱 맞아 대화할수록 재미있어요' },
+            { type: 'INTP', nickname: '호기심 가득한 방구석 연구원', reason: '서로의 개인 시간을 존중하며 담백하게 통하는 단짝!' },
+          ],
+          usagiComment: '계획이 다 있구나! 대단해!',
+          badgeBg: '#FDE68A',
+        },
+        ISFP: {
+          type: 'ISFP',
+          nickname: '감성 충만 자유로운 예술가',
+          description: [
+            '억지로 애쓰기보다 흘러가는 순간의 예쁜 풍경과 맛있는 한 입을 즐길 줄 아는 순수한 영혼이에요.',
+            '거창한 말보다 다정한 눈빛과 작은 배려로 마음을 전해서 주변 사람들에게 편안함을 주죠.',
+            '색감, 맛, 분위기 같은 섬세한 감각이 뛰어나서 나만의 맛집·카페 취향이 확고하게 자리 잡고 있어요.',
+            '하고 싶은 게 생기면 조용히 해내면서도, 쉴 때는 누구보다 평화롭게 쉬는 힐링 타입이랍니다.',
+          ],
+          jobs: [
+            { title: '시각·패키지 디자이너', reason: '타고난 색감과 조형 감각을 자연스럽게 표현해요' },
+            { title: '플로리스트·파티시에', reason: '손끝의 섬세한 감각으로 아름다운 결과물을 만들어요' },
+            { title: '포토그래퍼·영상 편집자', reason: '찰나의 따뜻한 분위기와 감성을 포착해요' },
+          ],
+          compatibleTypes: [
+            { type: 'ESFJ', nickname: '센스 만점 다정 요정', reason: '세심하게 챙겨주는 다정함 덕분에 늘 편안하고 행복해요' },
+            { type: 'ENFJ', nickname: '다정한 캡틴 치어리더', reason: '부드러운 응원이 숨겨진 감성과 재능을 반짝이게 해줘요' },
+            { type: 'ESTJ', nickname: '든든한 현실 캡틴', reason: '느긋한 여행 페이스에 든든한 계획력을 더해 줘요' },
+          ],
+          usagiComment: '같이 산책하면서 예쁜 거 보러 가자~',
+          badgeBg: '#FFD6E0',
+        },
+        ISFJ: {
+          type: 'ISFJ',
+          nickname: '따뜻한 수호천사 집사',
+          description: [
+            '조용하지만 가장 든든하게 주변 사람들의 곁을 지켜주는 다정하고 성실한 성격이에요.',
+            '친구가 좋아하는 음식이나 여행 중 불편할 점을 미리 기억해 두었다가 슬쩍 챙겨주는 세심함이 있죠.',
+            '크게 튀는 것보다는 익숙하고 평화로운 분위기 속에서 소중한 사람들과 웃는 걸 좋아해요.',
+            '부탁을 잘 거절하지 못해 혼자 애쓸 때도 있지만, 그만큼 모두에게 사랑받는 보물 같은 존재예요.',
+          ],
+          jobs: [
+            { title: '간호·보건·돌봄 전문가', reason: '세심한 관찰력과 따뜻한 마음으로 사람을 보살펴요' },
+            { title: '아카이브·기록·사서', reason: '차분하고 꼼꼼한 성격으로 질서를 유지해요' },
+            { title: '인사·총무 스페셜리스트', reason: '구성원들의 불편을 미리 살피고 든든히 지원해요' },
+          ],
+          compatibleTypes: [
+            { type: 'ESFP', nickname: '인생이 축제인 슈퍼스타', reason: '유쾌하고 밝은 에너지가 일상에 신나는 활력을 불어넣어요' },
+            { type: 'ESTP', nickname: '쿨하고 화끈한 해결사', reason: '결단력 있는 모습에 의지하면서 서로 빈틈을 채워줘요' },
+            { type: 'ISFP', nickname: '감성 충만 자유로운 예술가', reason: '다정하고 조용한 온기가 닮아서 함께 있으면 마음이 놓여요' },
+          ],
+          usagiComment: '우사기 간식도 챙겨줄 것 같아!',
+          badgeBg: '#FFE4EC',
+        },
+        ISTP: {
+          type: 'ISTP',
+          nickname: '만능 재주꾼 쿨냥이',
+          description: [
+            '평소엔 만사가 귀찮은 듯 느긋하다가도, 막상 손대면 뭐든 금방 뚝딱 해결하는 능력자예요.',
+            '불필요한 간섭을 싫어하고 나만의 페이스대로 조용히 맛집 찾고 여행하는 자유로운 매력이 넘치죠.',
+            '상황 파악이 빠르고 돌발 상황 앞에서도 동요하지 않아 주변에서 은근히 의지하게 되는 타입이에요.',
+            '말수는 적지만 가끔 던지는 촌철살인 유머가 너무 웃겨서 같이 있으면 묘하게 중독된답니다.',
+          ],
+          jobs: [
+            { title: '백엔드·인프라 엔지니어', reason: '복잡한 기계를 다루듯 문제를 명쾌하게 고쳐내요' },
+            { title: '산업·제품 디자이너', reason: '실용성과 손재주를 살려 완성도 높은 물건을 만들어요' },
+            { title: '촬영·음향 엔지니어', reason: '장비에 대한 빠른 이해력과 침착한 대응력이 돋보여요' },
+          ],
+          compatibleTypes: [
+            { type: 'ESFJ', nickname: '센스 만점 다정 요정', reason: '무뚝뚝한 모습까지도 따뜻하게 웃으며 잘 챙겨줘요' },
+            { type: 'ESTJ', nickname: '든든한 현실 캡틴', reason: '쿨하고 현실적인 감각이 딱 맞아 군더더기 없이 편해요' },
+            { type: 'ENTJ', nickname: '추진력 만렙 전략가', reason: '핵심만 딱딱 짚고 넘어가는 효율적인 호흡이 찰떡이에요' },
+          ],
+          usagiComment: '조용한데 실력이 장난 아니네!',
+          badgeBg: '#FEF3C7',
+        },
+        ISTJ: {
+          type: 'ISTJ',
+          nickname: '한결같은 프로 성실러',
+          description: [
+            '약속을 칼같이 지키고 맡은 일은 끝까지 책임지는, 세상에서 가장 믿음직한 사람이에요.',
+            '요행을 바라기보다 차근차근 검증된 정보와 경험의 가치를 누구보다 잘 알고 있죠.',
+            '겉으로는 차분하고 원칙적으로 보이지만, 알고 보면 나만의 단골 맛집과 소소한 유머를 즐길 줄 알아요.',
+            '내 주변이 깔끔하게 정리정돈되고 계획한 일정대로 흘러갈 때 가장 큰 마음의 평화를 얻는답니다.',
+          ],
+          jobs: [
+            { title: '회계·세무·감사 전문가', reason: '정확한 숫자와 원칙을 지키는 꼼꼼함이 빛나요' },
+            { title: '품질 관리(QA) 엔지니어', reason: '사소한 오류도 놓치지 않는 예리한 눈을 가졌어요' },
+            { title: '물류·공급망 관리자', reason: '안정적이고 체계적인 흐름을 끝까지 책임져요' },
+          ],
+          compatibleTypes: [
+            { type: 'ESFP', nickname: '인생이 축제인 슈퍼스타', reason: '꼼꼼한 계획에 통통 튀는 즐거움을 더해 주는 반전 짝꿍!' },
+            { type: 'ESTP', nickname: '쿨하고 화끈한 해결사', reason: '현실적인 판단과 빠른 실행력이 만나 막힘없이 굴러가요' },
+            { type: 'ISFJ', nickname: '따뜻한 수호천사 집사', reason: '한결같은 성실함과 배려심이 닮아 가장 편안한 사이예요' },
+          ],
+          usagiComment: '꾸준한 게 제일 멋진 거야 야하!',
+          badgeBg: '#FDE68A',
+        },
+      };
+
+      const state = {
+        screen: 'start',
+        currentIndex: 0,
+        answers: {},
+        resultType: 'ENFP',
+        isLocked: false,
+      };
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function renderUsagiImg(extraClass = '') {
+        return `
+          <div class="relative flex h-full w-full items-center justify-center ${extraClass}">
+            <img
+              src="${USAGI_IMAGE_URL}"
+              alt="귀여운 우사기 캐릭터 일러스트"
+              referrerpolicy="no-referrer"
+              onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');"
+              class="h-full w-full object-contain drop-shadow-[0_4px_0_rgba(45,34,30,0.08)]"
+            />
+            <div class="hidden h-full w-full items-center justify-center">${USAGI_FALLBACK_SVG}</div>
+          </div>
+        `;
+      }
+
+      function renderUsagiMascot({ mood = 'idle', size = 'md', speech = '' }) {
+        const sizeMap = {
+          sm: 'w-20 h-24 sm:w-24 sm:h-28',
+          md: 'w-32 h-40 sm:w-40 sm:h-48',
+          lg: 'w-40 h-52 sm:w-52 sm:h-64',
+        };
+        const animClass = mood === 'cheer' ? 'animate-usagi-cheer' : 'animate-usagi-float';
+        return `
+          <div class="relative inline-flex flex-col items-center select-none">
+            ${
+              speech
+                ? `<div class="relative mb-3 max-w-[280px] rounded-2xl border-2 border-[#2D221E] bg-white px-4 py-2.5 text-center text-[15px] font-bold text-[#2D221E] shadow-[0_3px_0_#2D221E] sm:text-base">
+                    <span>${escapeHtml(speech)}</span>
+                    <span aria-hidden="true" class="absolute -bottom-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-b-2 border-r-2 border-[#2D221E] bg-white"></span>
+                  </div>`
+                : ''
+            }
+            <div class="${animClass} flex items-center justify-center ${sizeMap[size]}">
+              ${renderUsagiImg()}
+            </div>
+          </div>
+        `;
+      }
+
+      function initBackgroundUsagis() {
+        const bgPositions = [
+          { top: '6%', left: '3%', cls: 'w-20 sm:w-28 -rotate-12 opacity-[0.22]' },
+          { top: '12%', right: '4%', cls: 'w-24 sm:w-32 rotate-12 opacity-[0.20]' },
+          { top: '46%', left: '2%', cls: 'w-20 sm:w-28 rotate-6 opacity-[0.16]' },
+          { top: '52%', right: '3%', cls: 'w-20 sm:w-28 -rotate-6 opacity-[0.18]' },
+          { bottom: '6%', left: '5%', cls: 'w-24 sm:w-32 rotate-12 opacity-[0.22]' },
+          { bottom: '8%', right: '5%', cls: 'w-20 sm:w-28 -rotate-12 opacity-[0.20]' },
+        ];
+        const container = document.getElementById('bg-usagi-layer');
+        container.innerHTML = bgPositions
+          .map((p) => {
+            const style = [
+              p.top ? `top:${p.top}` : '',
+              p.bottom ? `bottom:${p.bottom}` : '',
+              p.left ? `left:${p.left}` : '',
+              p.right ? `right:${p.right}` : '',
+            ]
+              .filter(Boolean)
+              .join(';');
+            return `<div style="${style}" class="absolute h-auto ${p.cls}">${renderUsagiImg()}</div>`;
+          })
+          .join('');
+      }
+
+      function calculateMbti(answers) {
+        const counts = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+        Object.values(answers).forEach((trait) => {
+          counts[trait] += 1;
+        });
+        return (
+          (counts.E >= counts.I ? 'E' : 'I') +
+          (counts.S >= counts.N ? 'S' : 'N') +
+          (counts.T >= counts.F ? 'T' : 'F') +
+          (counts.J >= counts.P ? 'J' : 'P')
+        );
+      }
+
+      function updateHeader() {
+        const resetBtn = document.getElementById('header-reset-btn');
+        if (state.screen === 'start') {
+          resetBtn.classList.add('hidden');
+        } else {
+          resetBtn.classList.remove('hidden');
+        }
+      }
+
+      function renderStartScreen() {
+        return `
+          <section class="animate-fade-up mx-auto w-full max-w-5xl">
+            <div class="grid grid-cols-1 items-stretch gap-6 rounded-3xl border-2 border-[#2D221E] bg-white/95 p-5 shadow-[0_8px_0_#EEDFB8] sm:p-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10 lg:p-12">
+              <div class="order-2 flex flex-col justify-between lg:order-1">
+                <div>
+                  <div class="mb-3 flex flex-wrap items-center gap-2 text-[15px] font-bold text-[#8A6D5B] sm:mb-4 sm:text-base">
+                    <span>음식 취향 · 여행 스타일</span>
+                    <span aria-hidden="true">·</span>
+                    <span>총 12문항</span>
+                    <span aria-hidden="true">·</span>
+                    <span>결과 이미지 저장</span>
+                  </div>
+
+                  <h1 class="font-display text-[2.15rem] leading-[1.26] tracking-tight text-[#2D221E] sm:text-5xl">
+                    우사기와 함께 알아보는
+                    <br />
+                    <span class="mt-1.5 inline-block rounded-xl bg-[#FFE678] px-2.5 py-0.5">
+                      MBTI 성향 테스트
+                    </span>
+                  </h1>
+
+                  <p class="mt-4 max-w-xl text-[17px] leading-[1.65] text-[#4E3D35] sm:mt-5 sm:text-lg">
+                    맛집 고르는 습관부터 여행지에서의 돌발 상황 대처까지! 평소 내 음식 취향과
+                    여행 스타일 12가지만 고르면 내 MBTI 유형과 어울리는 직업, 찰떡 궁합
+                    유형까지 한눈에 알려줄게요.
+                  </p>
+                </div>
+
+                <div class="mt-7 space-y-5 sm:mt-8">
+                  <div class="grid grid-cols-3 gap-3 border-t border-[#EFE4CE] pt-5 text-center sm:text-left">
+                    <div>
+                      <p class="font-latin text-xl font-bold tabular-nums text-[#2D221E] sm:text-2xl">12개</p>
+                      <p class="mt-0.5 text-[14px] text-[#6B5449] sm:text-[15px]">음식·여행 질문</p>
+                    </div>
+                    <div>
+                      <p class="font-latin text-xl font-bold tabular-nums text-[#2D221E] sm:text-2xl">3가지</p>
+                      <p class="mt-0.5 text-[14px] text-[#6B5449] sm:text-[15px]">추천 직업 안내</p>
+                    </div>
+                    <div>
+                      <p class="font-latin text-xl font-bold tabular-nums text-[#2D221E] sm:text-2xl">3유형</p>
+                      <p class="mt-0.5 text-[14px] text-[#6B5449] sm:text-[15px]">찰떡 궁합 MBTI</p>
+                    </div>
+                  </div>
+
+                  <button
+                    id="start-btn"
+                    type="button"
+                    class="flex min-h-[64px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-2xl border-2 border-[#2D221E] bg-[#FFE678] px-6 py-4 font-display text-[22px] text-[#2D221E] shadow-[0_5px_0_#2D221E] transition-transform hover:-translate-y-0.5 hover:bg-[#FFDF54] active:scale-[0.96] sm:min-h-[60px] sm:w-auto sm:min-w-[260px] sm:text-2xl"
+                  >
+                    <span class="whitespace-nowrap">시작하기</span>
+                    <span aria-hidden="true">→</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="order-1 flex flex-col items-center justify-center rounded-2xl border-2 border-[#2D221E] bg-[#FFF8DC] px-5 py-6 sm:p-8 lg:order-2">
+                ${renderUsagiMascot({
+                  mood: 'cheer',
+                  size: 'lg',
+                  speech: '야하! 맛있는 거랑 여행 얘기하자!',
+                })}
+                <p class="mt-3 text-center text-[15px] font-bold text-[#6B5449] sm:mt-4 sm:text-base">
+                  음식 취향 & 여행 스타일로 보는 내 찐 MBTI
+                </p>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      function renderQuestionScreen() {
+        const q = QUIZ_QUESTIONS[state.currentIndex];
+        const total = QUIZ_QUESTIONS.length;
+        const progressPercent = ((state.currentIndex + 1) / total) * 100;
+        const selectedTrait = state.answers[q.id];
+
+        return `
+          <section class="mx-auto w-full max-w-4xl">
+            <div class="mb-4 rounded-2xl border-2 border-[#2D221E] bg-white/95 px-4 py-3.5 shadow-[0_4px_0_#EEDFB8] sm:mb-5 sm:px-6">
+              <div class="mb-3 flex items-center justify-between gap-4">
+                <button
+                  id="prev-btn"
+                  type="button"
+                  ${state.currentIndex === 0 ? 'disabled' : ''}
+                  class="inline-flex min-h-[44px] cursor-pointer items-center gap-1 rounded-xl px-3 py-2 text-[16px] font-bold text-[#5C4940] transition-colors hover:bg-[#FFF8DC] hover:text-[#2D221E] disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  <span aria-hidden="true">‹</span>
+                  <span class="whitespace-nowrap">이전</span>
+                </button>
+
+                <div class="flex items-center gap-2 text-[16px] font-bold text-[#5C4940] sm:text-[17px]">
+                  <span>진행률</span>
+                  <span aria-hidden="true">·</span>
+                  <span class="font-latin text-[19px] font-extrabold tabular-nums text-[#2D221E]">
+                    ${state.currentIndex + 1}/${total}
+                  </span>
+                </div>
+              </div>
+
+              <div
+                class="relative h-5 w-full overflow-visible rounded-full border-2 border-[#2D221E] bg-[#FFF8DC]"
+                role="progressbar"
+                aria-valuenow="${state.currentIndex + 1}"
+                aria-valuemin="1"
+                aria-valuemax="${total}"
+              >
+                <div
+                  style="width: ${progressPercent}%"
+                  class="h-full rounded-full bg-[#FF9BB3] transition-all duration-300"
+                ></div>
+                <div
+                  style="left: ${progressPercent}%"
+                  class="pointer-events-none absolute top-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-300"
+                >
+                  <div class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#2D221E] bg-white p-1 shadow-sm">
+                    ${renderUsagiImg()}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="animate-fade-up rounded-3xl border-2 border-[#2D221E] bg-white/95 p-5 shadow-[0_8px_0_#EEDFB8] sm:p-8 lg:p-10">
+              <div class="grid grid-cols-1 items-center gap-5 lg:grid-cols-[0.35fr_0.65fr] lg:gap-8">
+                <div class="flex flex-row items-center justify-center gap-4 rounded-2xl border-2 border-[#EFE4CE] bg-[#FFFDF2] px-4 py-3.5 sm:py-4 lg:flex-col lg:py-8">
+                  ${renderUsagiMascot({ mood: 'idle', size: 'sm' })}
+                  <div class="text-left lg:mt-2 lg:text-center">
+                    <p class="text-[14px] font-bold text-[#9C7A68] sm:text-sm">${escapeHtml(q.situation)}</p>
+                    <p id="usagi-tip-text" class="mt-1 text-[16px] leading-snug font-bold text-[#2D221E] sm:text-base">
+                      ${escapeHtml(q.usagiTip)}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex flex-col">
+                  <div class="mb-2 flex items-center gap-2 text-[15px] font-bold text-[#8A6D5B] sm:text-base">
+                    <span class="font-latin text-[17px] tabular-nums text-[#E26D89]">
+                      Q${String(state.currentIndex + 1).padStart(2, '0')}
+                    </span>
+                    <span aria-hidden="true">·</span>
+                    <span>하나만 골라주세요</span>
+                  </div>
+
+                  <h2 class="font-display text-[24px] leading-[1.36] text-[#2D221E] sm:text-3xl">
+                    ${escapeHtml(q.question)}
+                  </h2>
+
+                  <div class="mt-5 flex flex-col gap-4 sm:mt-6">
+                    ${q.options
+                      .map((opt) => {
+                        const isPrev = selectedTrait === opt.trait;
+                        return `
+                          <button
+                            type="button"
+                            data-trait="${opt.trait}"
+                            class="option-btn group flex min-h-[88px] w-full cursor-pointer items-center gap-4 rounded-2xl border-2 border-[#2D221E] px-4 py-5 text-left transition-all hover:-translate-y-0.5 active:scale-[0.96] sm:min-h-[92px] sm:px-6 ${
+                              isPrev
+                                ? 'bg-[#FFF3B0] shadow-[0_4px_0_#2D221E]'
+                                : 'bg-[#FFFDF8] shadow-[0_4px_0_#EEDFB8] hover:bg-[#FFF8DC] hover:shadow-[0_4px_0_#2D221E]'
+                            }"
+                          >
+                            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-[#2D221E] font-latin text-lg font-extrabold ${
+                              isPrev ? 'bg-white text-[#2D221E]' : 'bg-[#FFE678] text-[#2D221E]'
+                            }">
+                              ${opt.label}
+                            </span>
+                            <span class="text-[17.5px] leading-[1.45] font-bold text-[#2D221E] sm:text-[19px]">
+                              ${escapeHtml(opt.text)}
+                            </span>
+                          </button>
+                        `;
+                      })
+                      .join('')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      function renderResultScreen() {
+        const r = MBTI_RESULTS[state.resultType] || MBTI_RESULTS.ENFP;
+
+        return `
+          <section class="animate-fade-up mx-auto w-full max-w-5xl">
+            <div id="result-capture-area" class="space-y-5 rounded-3xl bg-[#FFFDF5] p-2 sm:space-y-6 sm:p-4">
+              <div class="grid grid-cols-1 items-stretch gap-5 sm:gap-6 lg:grid-cols-[0.44fr_0.56fr]">
+                <div
+                  style="background-color: ${r.badgeBg}"
+                  class="flex flex-col items-center justify-between rounded-3xl border-2 border-[#2D221E] p-6 text-center shadow-[0_8px_0_#EEDFB8] sm:p-8"
+                >
+                  <div class="w-full">
+                    <p class="text-[15px] font-bold text-[#5C4940] sm:text-base">나의 MBTI 성향 결과</p>
+                    <h1 class="mt-1.5 font-latin text-[3.75rem] leading-none font-extrabold tracking-wider text-[#2D221E] sm:text-7xl">
+                      ${escapeHtml(r.type)}
+                    </h1>
+                    <p class="mt-3 font-display text-[26px] leading-snug text-[#2D221E] sm:text-3xl">
+                      ${escapeHtml(r.nickname)}
+                    </p>
+                  </div>
+
+                  <div class="mt-6 mb-2">
+                    ${renderUsagiMascot({
+                      mood: 'cheer',
+                      size: 'md',
+                      speech: r.usagiComment,
+                    })}
+                  </div>
+
+                  <p class="mt-2 text-[14px] font-bold text-[#6B5449]">
+                    음식 취향 · 여행 스타일 MBTI 테스트
+                  </p>
+                </div>
+
+                <div class="flex flex-col justify-between gap-6 rounded-3xl border-2 border-[#2D221E] bg-white p-6 shadow-[0_8px_0_#EEDFB8] sm:p-8">
+                  <div>
+                    <h2 class="font-display text-[23px] text-[#2D221E] sm:text-2xl">나는 어떤 사람일까?</h2>
+                    <div class="mt-4 space-y-3 text-[17px] leading-[1.7] text-[#473831] sm:text-[18px]">
+                      ${r.description.map((line) => `<p>${escapeHtml(line)}</p>`).join('')}
+                    </div>
+                  </div>
+
+                  <div class="border-t border-[#EFE4CE] pt-6">
+                    <div class="mb-4 flex items-center gap-2">
+                      <span class="text-xl" aria-hidden="true">💼</span>
+                      <h2 class="font-display text-[23px] text-[#2D221E] sm:text-2xl">어울리는 직업 3가지</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-3.5">
+                      ${r.jobs
+                        .map(
+                          (job, idx) => `
+                          <div class="flex items-start gap-3.5 rounded-2xl border-2 border-[#EFE4CE] bg-[#FFFDF5] p-4">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-[#2D221E] bg-[#FFE678] font-latin text-base font-extrabold tabular-nums text-[#2D221E]">
+                              0${idx + 1}
+                            </span>
+                            <div>
+                              <h3 class="text-[18px] font-bold text-[#2D221E] sm:text-[19px]">${escapeHtml(job.title)}</h3>
+                              <p class="mt-1 text-[15.5px] leading-[1.55] text-[#6B5449] sm:text-base">${escapeHtml(job.reason)}</p>
+                            </div>
+                          </div>
+                        `
+                        )
+                        .join('')}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 궁합이 좋은 MBTI 3가지 -->
+              <div class="rounded-3xl border-2 border-[#2D221E] bg-white p-6 shadow-[0_8px_0_#EEDFB8] sm:p-8">
+                <div class="mb-5 flex items-center gap-2.5">
+                  <span class="text-xl" aria-hidden="true">🩷</span>
+                  <h2 class="font-display text-[23px] text-[#2D221E] sm:text-2xl">
+                    ${escapeHtml(r.type)}와 궁합이 좋은 MBTI 3가지
+                  </h2>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  ${r.compatibleTypes
+                    .map(
+                      (match) => `
+                      <div class="flex flex-col justify-between rounded-2xl border-2 border-[#EFE4CE] bg-[#FFFDF5] p-5">
+                        <div>
+                          <div class="flex items-baseline gap-2.5">
+                            <span class="font-latin text-3xl font-extrabold tracking-wide text-[#2D221E]">${escapeHtml(match.type)}</span>
+                            <span class="text-[15px] font-bold text-[#E26D89]">찰떡 궁합</span>
+                          </div>
+                          <p class="mt-1 font-display text-[19px] text-[#2D221E]">${escapeHtml(match.nickname)}</p>
+                        </div>
+                        <p class="mt-3 text-[15.5px] leading-[1.55] text-[#5C4940] sm:text-base">${escapeHtml(match.reason)}</p>
+                      </div>
+                    `
+                    )
+                    .join('')}
+                </div>
+              </div>
+            </div>
+
+            <!-- 하단 액션 버튼 -->
+            <div class="mt-5 px-2 sm:mt-6 sm:px-4">
+              <p id="capture-error-msg" class="mb-3 hidden text-center text-[15px] font-bold text-[#B91C1C]"></p>
+              <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
+                <button
+                  id="download-png-btn"
+                  type="button"
+                  class="flex min-h-[60px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-2xl border-2 border-[#2D221E] bg-[#FFE678] px-5 py-4 font-display text-[19px] text-[#2D221E] shadow-[0_4px_0_#2D221E] transition-transform hover:-translate-y-0.5 hover:bg-[#FFDF54] active:scale-[0.96] sm:text-xl"
+                >
+                  <span class="whitespace-nowrap">이미지로 저장 (PNG)</span>
+                </button>
+
+                <button
+                  id="share-btn"
+                  type="button"
+                  class="flex min-h-[60px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-2xl border-2 border-[#2D221E] bg-white px-5 py-4 font-display text-[19px] text-[#2D221E] shadow-[0_4px_0_#2D221E] transition-transform hover:-translate-y-0.5 hover:bg-[#FFF8DC] active:scale-[0.96] sm:text-xl"
+                >
+                  <span class="whitespace-nowrap">친구에게 결과 공유하기</span>
+                </button>
+
+                <button
+                  id="restart-btn"
+                  type="button"
+                  class="flex min-h-[60px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-2xl border-2 border-[#2D221E] bg-[#2D221E] px-5 py-4 font-display text-[19px] text-white shadow-[0_4px_0_#8A6D5B] transition-transform hover:-translate-y-0.5 hover:bg-[#41332E] active:scale-[0.96] sm:text-xl"
+                >
+                  <span class="whitespace-nowrap">다시 하기</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      function bindEvents() {
+        if (state.screen === 'start') {
+          document.getElementById('start-btn')?.addEventListener('click', () => {
+            state.answers = {};
+            state.currentIndex = 0;
+            state.screen = 'quiz';
+            if (window.location.search) {
+              window.history.replaceState({}, '', window.location.pathname);
+            }
+            render();
+          });
+        } else if (state.screen === 'quiz') {
+          document.getElementById('prev-btn')?.addEventListener('click', () => {
+            if (state.currentIndex > 0 && !state.isLocked) {
+              state.currentIndex -= 1;
+              render();
+            }
+          });
+
+          document.querySelectorAll('.option-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+              if (state.isLocked) return;
+              state.isLocked = true;
+              const trait = btn.getAttribute('data-trait');
+              const q = QUIZ_QUESTIONS[state.currentIndex];
+
+              btn.classList.remove('bg-[#FFFDF8]', 'bg-[#FFF3B0]', 'shadow-[0_4px_0_#EEDFB8]');
+              btn.classList.add('bg-[#FFE678]', 'shadow-[0_5px_0_#2D221E]', 'animate-choice-bounce');
+              const tipEl = document.getElementById('usagi-tip-text');
+              if (tipEl) tipEl.textContent = '오케이! 다음으로 슝~';
+
+              setTimeout(() => {
+                state.answers[q.id] = trait;
+                state.isLocked = false;
+                if (state.currentIndex + 1 < QUIZ_QUESTIONS.length) {
+                  state.currentIndex += 1;
+                } else {
+                  state.resultType = calculateMbti(state.answers);
+                  state.screen = 'result';
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+                render();
+              }, 260);
+            });
+          });
+        } else if (state.screen === 'result') {
+          const r = MBTI_RESULTS[state.resultType] || MBTI_RESULTS.ENFP;
+
+          document.getElementById('download-png-btn')?.addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            const target = document.getElementById('result-capture-area');
+            const errEl = document.getElementById('capture-error-msg');
+            if (!target || !window.htmlToImage) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="whitespace-nowrap">이미지 만드는 중...</span>';
+            errEl.classList.add('hidden');
+
+            try {
+              let dataUrl;
+              try {
+                dataUrl = await window.htmlToImage.toPng(target, {
+                  pixelRatio: 2,
+                  backgroundColor: '#FFFDF5',
+                  cacheBust: true,
+                });
+              } catch {
+                dataUrl = await window.htmlToImage.toPng(target, {
+                  pixelRatio: 2,
+                  backgroundColor: '#FFFDF5',
+                  skipFonts: true,
+                });
+              }
+
+              const link = document.createElement('a');
+              link.download = `MBTI-${r.type}-결과.png`;
+              link.href = dataUrl;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+
+              btn.innerHTML = '<span class="whitespace-nowrap text-[#15803D]">✓ PNG 저장 완료!</span>';
+              setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="whitespace-nowrap">이미지로 저장 (PNG)</span>';
+              }, 2400);
+            } catch {
+              errEl.textContent = '이미지 저장 중 문제가 발생했어요. 다시 한 번 눌러주세요.';
+              errEl.classList.remove('hidden');
+              btn.disabled = false;
+              btn.innerHTML = '<span class="whitespace-nowrap">이미지로 저장 (PNG)</span>';
+            }
+          });
+
+          document.getElementById('share-btn')?.addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            const shareUrl = `${window.location.origin}${window.location.pathname}?result=${r.type}`;
+            const shareText = `우사기 MBTI 성향 테스트 해봤어! 내 유형은 "${r.nickname}" (${r.type})래. 너도 해봐!`;
+
+            if (navigator.share) {
+              try {
+                await navigator.share({
+                  title: `내 MBTI 결과는 ${r.type} (${r.nickname})!`,
+                  text: shareText,
+                  url: shareUrl,
+                });
+                return;
+              } catch {}
+            }
+
+            try {
+              await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+            } catch {
+              const ta = document.createElement('textarea');
+              ta.value = `${shareText}\n${shareUrl}`;
+              ta.style.position = 'fixed';
+              ta.style.opacity = '0';
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand('copy');
+              document.body.removeChild(ta);
+            }
+
+            btn.innerHTML = '<span class="whitespace-nowrap text-[#15803D]">✓ 링크가 복사되었어요!</span>';
+            setTimeout(() => {
+              btn.innerHTML = '<span class="whitespace-nowrap">친구에게 결과 공유하기</span>';
+            }, 2400);
+          });
+
+          document.getElementById('restart-btn')?.addEventListener('click', resetToStart);
+        }
+      }
+
+      function resetToStart() {
+        state.answers = {};
+        state.currentIndex = 0;
+        state.screen = 'start';
+        state.isLocked = false;
+        if (window.location.search) {
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        render();
+      }
+
+      function render() {
+        updateHeader();
+        const app = document.getElementById('app');
+        if (state.screen === 'start') {
+          app.innerHTML = renderStartScreen();
+        } else if (state.screen === 'quiz') {
+          app.innerHTML = renderQuestionScreen();
+        } else {
+          app.innerHTML = renderResultScreen();
+        }
+        bindEvents();
+      }
+
+      document.getElementById('header-title-btn').addEventListener('click', resetToStart);
+      document.getElementById('header-reset-btn').addEventListener('click', resetToStart);
+
+      const params = new URLSearchParams(window.location.search);
+      const sharedType = params.get('result')?.toUpperCase();
+      if (sharedType && MBTI_RESULTS[sharedType]) {
+        state.resultType = sharedType;
+        state.screen = 'result';
+      }
+
+      initBackgroundUsagis();
+      render();
+    </script>
+  </body>
+</html>
